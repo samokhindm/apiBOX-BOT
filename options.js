@@ -1,4 +1,11 @@
 module.exports = {
+    newProjectOptions: {
+        reply_markup: JSON.stringify({
+            force_reply: true,
+            //input_field_placeholder: 'test'
+        })
+    },
+
     gameOptions: {
         reply_markup: JSON.stringify({
             inline_keyboard: [

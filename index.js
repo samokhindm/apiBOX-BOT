@@ -210,7 +210,7 @@ const start = async () => {
                 return newProject(chatId, 3);
             }
             if (msg.reply_to_message.text === 'Пришлите ссылку на Дашборд') {
-                const gdsId = text.split('/')[5]
+                const gdsId = text.split('/')[4]
                 newProjects.gdsId = gdsId
                 
                 return newProject(chatId, 4);

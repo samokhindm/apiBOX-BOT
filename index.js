@@ -34,7 +34,13 @@ function sendHTML(chatId, html) {
         projectOptions,
         parse_mode: 'HTML'
     }
-    bot.sendMessage(chatId, html, options)
+    bot.sendMessage (chatId, html, options)
+}
+
+async function supMassage (chatId, msg) {
+    const supChatId = -736928533
+    await bot.sendMessage (supChatId, `${chatId}`)
+    return bot.forwardMessage (supChatId, chatId, msg.message_id)
 }
 
 async function sellectProject(chatId, method){
@@ -107,13 +113,15 @@ const newProject = async (chatId, newProjState) => {
             }
         })
         //await bot.sendMessage (chatId, `${user.id}`);
+        const today = new Date()
         const project = await Project.create({
             userId: user.id,
             chat_id: chatId,
             project_name: newProjects.projectName,
             settings: newProjects.apiKey,
             gss_id: newProjects.gssId,
-            gds_id: newProjects.gdsId
+            gds_id: newProjects.gdsId,
+            valid_to: today.setDate(today.getDate()+14)
             })
         return bot.sendMessage (chatId, `Круто! ${newProjects.projectName}, ${newProjects.apiKey}, ${newProjects.gssUrl}, ${newProjects.gdsUrl}`);
         } catch (e) {
@@ -138,15 +146,19 @@ const start = async () => {
     bot.setMyCommands([
         {command: '/start', description: 'Добавить проект'},
         {command: '/info', description: 'Информация о проектах'},
+        {command: '/help', description: 'Написать в поддержку'},
     ])
 
     
     bot.on('message', async msg => {
-        const text = msg.text;
-        const chatId = msg.chat.id;
-        const firstName = msg.from.first_name;
-        const lastName = msg.from.last_name;
-        const username = msg.from.username;
+        const text = msg.text
+        const chatId = msg.chat.id
+        const firstName = msg.from.first_name
+        const lastName = msg.from.last_name
+        const username = msg.from.username
+        //const replyChatID = msg.reply_to_message.chat.id
+        
+
     
         try {
             if (text === '/start') {
@@ -195,6 +207,42 @@ const start = async () => {
                 }
                 
             }
+
+            if (text === '/help') {
+                try {
+                    const user = await User.findOne({ where:{
+                        chat_id: chatId.toString()
+                        }
+                    })
+                    if (user === undefined) {
+                        return bot.sendMessage(chatId, 'Вы не зарегистрированы', projectOptions)
+                    }
+                    const projs = await Project.findAll({ where:{
+                        chat_id: chatId.toString()
+                        }
+                    })
+                    if (projs[0] === undefined) {
+                        
+                        return bot.sendMessage(chatId, 'У вас нет проектов', projectOptions)
+                      } else {
+                        return bot.sendMessage (chatId, `Напишите ваш вопрос ответом на это сообщение`,replyOptions)
+                        //return helpMassage (chatId, user, projs)
+                      }
+                } catch (e) {
+                    await bot.sendMessage (chatId, `${e}` )
+                }
+                
+            }
+
+            if (msg.reply_to_message.text === 'Напишите ваш вопрос ответом на это сообщение') {
+                return supMassage(chatId, msg)
+            }
+
+            if (msg.reply_to_message.chat.id == '-736928533') {
+                await bot.sendMessage(msg.reply_to_message.forward_from.id , `${msg.text}`)
+                return bot.sendMessage (msg.reply_to_message.forward_from.id, `Напишите ваш вопрос ответом на это сообщение`,replyOptions)
+            }
+            
 
             if (msg.reply_to_message.text === 'Напишите название вашего магазина') {
                 newProjects.projectName = text

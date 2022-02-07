@@ -1,5 +1,6 @@
 const {Project} = require('../models/models')
 const ApiError = require('../error/ApiError')
+//const { DATE } = require('sequelize/dist')
 
 
 class projectController {
@@ -28,9 +29,13 @@ class projectController {
 
     async getSettings(req, res) {
         const {gss_id} = req.params
+        const today = new Date()
         const project = await Project.findOne({
             where: {gss_id: gss_id}
         })
+        if (project.valid_to < today) {
+            return res.json({message: 'Ошибка даты'})
+        } 
         return res.json(project)
     }
     

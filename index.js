@@ -9,7 +9,7 @@ const TelegramAPI = require('node-telegram-bot-api')
 const token = process.env.TOKEN
 const PORT = process.env.PORT || 5000
 const bot = new TelegramAPI(token, {polling: true})
-const {replyOptions, projectOptions, howItWorkOptions, showDemoOptions, onePleaseOptions, demoRegOptions, projectSettingsOptions} = require('./options')
+const {replyOptions, projectOptions, howItWorkOptions, showDemoOptions, onePleaseOptions, demoRegOptions, newUserOptions, projectSettingsOptions} = require('./options')
 const {User, Project} = require('./models/models')
 const { types } = require('pg')
 

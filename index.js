@@ -9,7 +9,7 @@ const TelegramAPI = require('node-telegram-bot-api')
 const token = process.env.TOKEN
 const PORT = process.env.PORT || 5000
 const bot = new TelegramAPI(token, {polling: true})
-const {replyOptions, projectOptions, projectSettingsOptions} = require('./options')
+const {replyOptions, projectOptions, howItWorkOptions, showDemoOptions, onePleaseOptions, demoRegOptions, projectSettingsOptions} = require('./options')
 const {User, Project} = require('./models/models')
 const { types } = require('pg')
 
@@ -88,7 +88,7 @@ const newUser = async (chatId, email, firstName, lastName, username) => {
         last_name: lastName,
         username: username
     })
-    return bot.sendMessage (chatId, 'Спасибо')
+    return bot.sendMessage (chatId, `Спасибо ${firstName} . Вам нужно добавить проект.`, newUserOptions)
 }
 
 const newProject = async (chatId, newProjState) => {
@@ -123,7 +123,7 @@ const newProject = async (chatId, newProjState) => {
             gds_id: newProjects.gdsId,
             valid_to: today.setDate(today.getDate()+14)
             })
-        return bot.sendMessage (chatId, `Круто! ${newProjects.projectName}, ${newProjects.apiKey}, ${newProjects.gssUrl}, ${newProjects.gdsUrl}`);
+        return bot.sendMessage (chatId, `Круто! У вас новый проект: ${newProjects.projectName}`);
         } catch (e) {
             await bot.sendMessage (chatId, 'Не удалось создать проект')
             console.log ('Не удалось создать проект', e)
@@ -144,7 +144,7 @@ const start = async () => {
     }
     app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
     bot.setMyCommands([
-        {command: '/start', description: 'Добавить проект'},
+        {command: '/start', description: 'Начать'},
         {command: '/info', description: 'Информация о проектах'},
         {command: '/help', description: 'Написать в поддержку'},
     ])
@@ -162,16 +162,18 @@ const start = async () => {
     
         try {
             if (text === '/start') {
-                await bot.sendMessage (chatId, 'Этот бот поможет разобраться в отчетах ВБ и посчитать сколько вы заработали')
+                //return bot.sendMessage (chatId, 'Привет! Я бот сервиса MPBox, помогу тебе сделать полезный отчет для твоего магазина на Wildberries', howItWorkOptions)
+                //await bot.sendMessage (chatId, 'Привет! Я бот сервиса MPBox, помогу тебе разобраться в отчетах Wildberries и посчитать сколько вы заработали')
                 try {
                     const user = await User.findOne({ where:{
                         chat_id: chatId.toString()
                         }
                     })
                     if (user === null) {
-                        await bot.sendMessage (chatId, `Вы не зарегистрированны. Нам понадобится ваша почта, что бы сообщать об обновлениях, не чаще одного раза в месяц. Обещаем спама не будет!`)
-                        return bot.sendMessage (chatId, 'Ваша почта:',replyOptions )
-                      } else {
+                        return bot.sendMessage (chatId, 'Привет! Я бот сервиса MPBox, помогу тебе сделать полезный отчет для твоего магазина на Wildberries', howItWorkOptions)
+            //            await bot.sendMessage (chatId, `Вы не зарегистрированны. Нам понадобится ваша почта, что бы сообщать об обновлениях, не чаще одного раза в месяц. Обещаем спама не будет!`)
+            //             return bot.sendMessage (chatId, 'Ваша почта:',replyOptions )
+                        } else {
                         await bot.sendMessage (chatId, `Привет ${user.first_name}` )
                         const projs = await Project.findAll({ where:{
                             chat_id: chatId.toString()
@@ -179,16 +181,16 @@ const start = async () => {
                         })
                         if (projs[0] === undefined) {
                             return bot.sendMessage(chatId, 'У вас нет проектов', projectOptions)
-                          } else {
+                        } else {
                             
                             return projectList(chatId)
 
-                          }
-                      }
+                            }
+                    }
                     
                 } catch (e) {
                     await bot.sendMessage (chatId, `${e}` )
-                }
+                    }
             }
             if (text === '/info') {
                 try {
@@ -235,6 +237,7 @@ const start = async () => {
             }
 
             if (msg.reply_to_message.text === 'Напишите ваш вопрос ответом на это сообщение') {
+                //await bot.sendMessage(chatId, `${msg.message_id}`)
                 return supMassage(chatId, msg)
             }
 
@@ -292,6 +295,29 @@ const start = async () => {
             const id = getProjectId(data)
             //return bot.sendMessage(chatId, `${data}`)
             return deletProject(chatId, id)
+        }
+
+        if (data == '/howItWork') {
+            return bot.sendMessage(chatId, `Мы забираем данные у WB через API, высчитываем нужные показатели и делаем удобные графики в Google Data Studio.
+            Для формирования отчета нам нужен API ключ продавца и информация по себестоимости товара.`, showDemoOptions)
+            
+        }
+
+        if (data == '/showDemo') {
+            return bot.sendMessage(chatId, `Лови ссылку на <a href='https://datastudio.google.com/u/0/reporting/407d0773-da27-464d-94ae-154fc3a7b5d4/'> демо-очет </a> и <a href='https://www.youtube.com/'> видео-презентацию</a>.`, onePleaseOptions)
+        }
+
+        if (data == '/help') {
+            return bot.sendMessage (chatId, `Напишите ваш вопрос ответом на это сообщение`,replyOptions)
+        }
+
+        if (data == '/onePlease') {
+            return bot.sendMessage(chatId, `Доступ стоит всего 990 рублей в месяц и дается бесплатный доступ на 7 дней, чтобы ты мог оценить пользу от отчета.`, demoRegOptions)
+        }
+
+        if (data == '/wonaDemo') {
+            await bot.sendMessage (chatId, `Нам понадобится ваша почта, что бы сообщать об обновлениях, не чаще одного раза в месяц. Обещаем спама не будет!`)
+            return bot.sendMessage (chatId, 'Ваша почта:',replyOptions )
         }
         
     })

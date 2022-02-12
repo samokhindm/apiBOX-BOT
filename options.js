@@ -6,6 +6,40 @@ module.exports = {
         })
     },
 
+    howItWorkOptions: {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Как это работает?', callback_data: '/howItWork'}]
+            ]
+        })
+    },
+
+    showDemoOptions: {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Как выглядит отчет?', callback_data: '/showDemo'}]
+            ]
+        })
+    },
+
+    onePleaseOptions: {
+        parse_mode: 'HTML',
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Хочу такой же отчет!', callback_data: '/onePlease'}],
+                [{text: 'У меня есть вопросы... ', callback_data: '/help'}]
+            ]
+        })
+    },
+
+    demoRegOptions: {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Хочу демо-доступ!', callback_data: '/wonaDemo'}]
+            ]
+        })
+    },
+
     projectSettingsOptions: {
         reply_markup: JSON.stringify({
             inline_keyboard: [
@@ -35,6 +69,16 @@ module.exports = {
                 [{text: 'Добавить проект', callback_data: '/newPriject'}],
                 [{text: 'Настроить', callback_data: '/prijectSettings'}],
                 [{text: 'Удалить', callback_data: '/deleteProject'}]
+            ]
+            
+        })
+    },
+
+    newUserOptions: {
+
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Добавить проект', callback_data: '/newPriject'}],
             ]
             
         })

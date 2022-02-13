@@ -24,6 +24,7 @@ module.exports = {
 
     onePleaseOptions: {
         parse_mode: 'HTML',
+        disable_web_page_preview: true,
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [{text: 'Хочу такой же отчет!', callback_data: '/onePlease'}],

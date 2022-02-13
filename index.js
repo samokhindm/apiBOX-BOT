@@ -1,4 +1,6 @@
+
 require('dotenv').config()
+const axios = require('axios').default;
 const express = require('express')
 const sequelize = require('./db')
 const cors = require('cors')
@@ -36,6 +38,17 @@ function sendHTML(chatId, html) {
     }
     bot.sendMessage (chatId, html, options)
 }
+async function checkApiKey(apiKey) {
+    const dateFrom = new Date().toISOString().slice(0,10)
+    const url = `https://suppliers-stats.wildberries.ru/api/v1/supplier/orders?dateFrom=${dateFrom}&flag=0&key=${apiKey}`
+    responseStatus = await axios.get(url).catch(function (error) {
+        if (error.response) {
+            return error.response.status;
+        }
+    });
+    return responseStatus
+}
+
 
 async function supMassage (chatId, msg) {
     const supChatId = -736928533
@@ -248,19 +261,39 @@ const start = async () => {
             
 
             if (msg.reply_to_message.text === 'Напишите название вашего магазина') {
+                if (!text ) {
+                    return newProject(chatId, 0);
+                }
                 newProjects.projectName = text
                 return newProject(chatId, 1);
             }
             if (msg.reply_to_message.text === 'Отлично! Сгенерируйте API ключ и отпрвьте его мне') {
+                if (!text || text.length != 48 ) {
+                    await bot.sendMessage (chatId, `Неверный ключ`)
+                    return newProject(chatId, 1);
+                }
+                await checkApiKey(text)
+                if (responseStatus === 401) {
+                    await bot.sendMessage (chatId, `checkApiKey: Неверный ключ`)
+                    return newProject(chatId, 1);
+                }
                 newProjects.apiKey = text
                 return newProject(chatId, 2);
             }
             if (msg.reply_to_message.text === 'Как все сделаете, отправьте мне ссылку на вашу копию') {
+                if (!text) {
+                    await bot.sendMessage (chatId, `Нам нужна именно ссылка`)
+                    return newProject(chatId, 2);
+                }
                 const gssId = text.split('/')[5]
                 newProjects.gssId = gssId
                 return newProject(chatId, 3);
             }
             if (msg.reply_to_message.text === 'Пришлите ссылку на Дашборд') {
+                if (!text) {
+                    await bot.sendMessage (chatId, `Нам нужна именно ссылка`)
+                    return newProject(chatId, 3);
+                }
                 const gdsId = text.split('/')[4]
                 newProjects.gdsId = gdsId
                 
@@ -298,8 +331,7 @@ const start = async () => {
         }
 
         if (data == '/howItWork') {
-            return bot.sendMessage(chatId, `Мы забираем данные у WB через API, высчитываем нужные показатели и делаем удобные графики в Google Data Studio.
-            Для формирования отчета нам нужен API ключ продавца и информация по себестоимости товара.`, showDemoOptions)
+            return bot.sendMessage(chatId, `Мы забираем данные у WB через API, высчитываем нужные показатели и делаем удобные графики в Google Data Studio. Для формирования отчета нам нужен API ключ продавца и информация по себестоимости товара.`, showDemoOptions)
             
         }
 
